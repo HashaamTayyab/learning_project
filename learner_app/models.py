@@ -5,6 +5,10 @@ from authentication_app.models import CustomUser
 class Dot(models.Model):
     name = models.CharField(max_length=30, unique=True, null=False)
     user = models.ManyToManyField(CustomUser, related_name='dots')
+    order = models.PositiveIntegerField(default=0)  # Allows manual ordering
+    
+    class Meta:
+        ordering = ['order']  # Orders by the 'order' field
     
     def __str__(self):
         return self.name

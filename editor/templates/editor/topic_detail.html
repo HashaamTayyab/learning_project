@@ -1,0 +1,284 @@
+{% extends 'editor/base.html' %}
+
+{% block title %}{{ topic.title }} - DotApp{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css">
+    <style>
+        .topic-header {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+        }
+        .topic-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .topic-section {
+            margin-bottom: 2rem;
+        }
+        .topic-section:last-child {
+            margin-bottom: 0;
+        }
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        .section-title i {
+            margin-right: 0.5rem;
+        }
+        .media-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .topic-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .topic-image:hover {
+            transform: scale(1.02);
+        }
+        .download-btn {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .download-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+        .audio-player {
+            width: 100%;
+            margin-top: 1rem;
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .audio-player audio {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .audio-download {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .audio-download:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .audio-download i {
+            margin-right: 0.5rem;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+        #imageModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            cursor: pointer;
+        }
+        #modalImage {
+            max-width: 90%;
+            max-height: 90vh;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 5px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Image Modal -->
+    <div id="imageModal" onclick="closeModal()">
+        <img id="modalImage" src="" alt="Full size image">
+    </div>
+
+    <!-- Topic Header -->
+    <div class="topic-header mb-4">
+        <div class="container">
+            <div class="text-center">
+                <h1 class="display-4">{{ topic.title }}</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center bg-transparent mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'view_modules' topic.subdot.module.track.id %}" class="text-white">
+                                {{ topic.subdot.module.track.name }}
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'view_subdots' topic.subdot.module.id %}" class="text-white">
+                                {{ topic.subdot.module.name }}
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'view_topics' topic.subdot.id %}" class="text-white">
+                                {{ topic.subdot.name }}
+                            </a>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="topic-content">
+                    {% if topic.content %}
+                        <div class="topic-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-file-alt"></i>Content
+                            </h2>
+                            <div class="content-text">
+                                {{ topic.content|safe }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if topic.code %}
+                        <div class="topic-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-code"></i>Code
+                            </h2>
+                            <pre><code class="language-javascript">{{ topic.code }}</code></pre>
+                        </div>
+                    {% endif %}
+
+                    {% if topic.image %}
+                        <div class="topic-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-image"></i>Image
+                            </h2>
+                            <div class="media-container">
+                                <img src="{{ topic.image.url }}" 
+                                     alt="{{ topic.title }} image" 
+                                     class="topic-image"
+                                     onclick="openModal(this.src)">
+                                <a href="{{ topic.image.url }}" 
+                                   download 
+                                   class="download-btn" 
+                                   title="Download Image">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if topic.audio %}
+                        <div class="topic-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-music"></i>Audio
+                            </h2>
+                            <div class="audio-player">
+                                <audio controls>
+                                    <source src="{{ topic.audio.url }}" type="audio/mpeg">
+                                    Your browser does not support the audio element.
+                                </audio>
+                                <a href="{{ topic.audio.url }}" 
+                                   download 
+                                   class="audio-download">
+                                    <i class="fas fa-download"></i>Download Audio
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between mb-4">
+                    <a href="{% url 'view_topics' topic.subdot.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Topics
+                    </a>
+                    {% if not topic.completed %}
+                        <button onclick="markAsComplete()" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i>Mark as Complete
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+    <script>
+        function markAsComplete() {
+            fetch(`/editor/mark_topic_complete/${topic.id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                }
+            });
+        }
+
+        // Image modal functionality
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = "block";
+            modalImg.src = imageSrc;
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = "none";
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === "Escape") {
+                closeModal();
+            }
+        });
+    </script>
+{% endblock %}

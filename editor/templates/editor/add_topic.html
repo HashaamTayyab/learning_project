@@ -1,0 +1,293 @@
+{% extends 'editor/base.html' %}
+
+{% block title %}Add Topic - {{ subdot.name }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        #editor-container > div {
+            display: none;
+            margin-bottom: 2rem;
+        }
+        #drop-area {
+            border: 2px dashed var(--primary-color);
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            margin: 1rem 0;
+            background-color: rgba(52, 152, 219, 0.05);
+            transition: all 0.3s ease;
+        }
+        #drop-area:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        .editor-toolbar {
+            background-color: var(--light-color);
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        .editor-toolbar button {
+            margin-right: 0.5rem;
+        }
+        #monaco-editor {
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+        }
+        .content-type-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <h1 class="page-title">Add Topic for {{ subdot.name }}</h1>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control form-control-lg" name="title" required>
+                            </div>
+
+                            <div class="editor-toolbar card mb-4">
+                                <div class="card-body d-flex flex-wrap gap-2">
+                                    <button type="button" id="add-text" class="btn btn-outline-primary">
+                                        <i class="fas fa-paragraph me-2"></i>Add Text
+                                    </button>
+                                    <button type="button" id="add-code" class="btn btn-outline-primary">
+                                        <i class="fas fa-code me-2"></i>Add Code
+                                    </button>
+                                    <button type="button" id="add-image" class="btn btn-outline-primary">
+                                        <i class="fas fa-image me-2"></i>Add Image
+                                    </button>
+                                    <button type="button" id="add-audio" class="btn btn-outline-primary">
+                                        <i class="fas fa-music me-2"></i>Add Audio
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="editor-container">
+                                <div id="text-editor" class="card">
+                                    <div class="card-header bg-light">
+                                        <i class="fas fa-paragraph me-2"></i>Text Content
+                                    </div>
+                                    <div class="card-body">
+                                        <textarea class="tinymce" name="content"></textarea>
+                                    </div>
+                                </div>
+
+                                <div id="code-editor" class="card">
+                                    <div class="card-header bg-light">
+                                        <i class="fas fa-code me-2"></i>Code Editor
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="monaco-editor" style="height: 400px;"></div>
+                                        <textarea name="code" id="code-hidden" style="display: none;"></textarea>
+                                    </div>
+                                </div>
+
+                                <div id="image-uploader" class="card">
+                                    <div class="card-header bg-light">
+                                        <i class="fas fa-image me-2"></i>Image Upload
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="drop-area">
+                                            <i class="fas fa-cloud-upload-alt content-type-icon"></i>
+                                            <p class="mb-3">Drag and drop image files here or</p>
+                                            <div class="file-input-wrapper">
+                                                <button type="button" class="btn btn-outline-primary">
+                                                    <i class="fas fa-folder-open me-2"></i>Browse Files
+                                                </button>
+                                                <input type="file" name="image" accept="image/*">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="audio-uploader" class="card">
+                                    <div class="card-header bg-light">
+                                        <i class="fas fa-music me-2"></i>Audio Upload
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="drop-area">
+                                            <i class="fas fa-cloud-upload-alt content-type-icon"></i>
+                                            <p class="mb-3">Drag and drop audio files here or</p>
+                                            <div class="file-input-wrapper">
+                                                <button type="button" class="btn btn-outline-primary">
+                                                    <i class="fas fa-folder-open me-2"></i>Browse Files
+                                                </button>
+                                                <input type="file" name="audio" accept="audio/*">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="{% url 'view_topics' subdot.id %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Topics
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i>Save Topic
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor/min/vs/loader.js"></script>
+    <script src="https://cdn.tiny.cloud/1/ssut2f8a05vvduw6y28mzeurxq1wc9l0po6o21hpofirco7h/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        // Initialize TinyMCE with better configuration
+        tinymce.init({
+            selector: '.tinymce',
+            height: 400,
+            menubar: true,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic backcolor | \
+                     alignleft aligncenter alignright alignjustify | \
+                     bullist numlist outdent indent | removeformat | help'
+        });
+
+        let monacoEditor;
+
+        // Load Monaco Editor with better configuration
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                value: '',
+                language: 'javascript',
+                theme: 'vs-light',
+                minimap: { enabled: true },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                fontSize: 14,
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                readOnly: false,
+                cursorStyle: 'line',
+                automaticLayout: true
+            });
+
+            monacoEditor.onDidChangeModelContent(() => {
+                document.getElementById('code-hidden').value = monacoEditor.getValue();
+            });
+        });
+
+        // Content type buttons
+        document.getElementById('add-text').addEventListener('click', function() {
+            document.getElementById('text-editor').style.display = 'block';
+        });
+
+        document.getElementById('add-code').addEventListener('click', function() {
+            document.getElementById('code-editor').style.display = 'block';
+            if (monacoEditor) {
+                monacoEditor.layout();
+            }
+        });
+
+        document.getElementById('add-image').addEventListener('click', function() {
+            document.getElementById('image-uploader').style.display = 'block';
+        });
+
+        document.getElementById('add-audio').addEventListener('click', function() {
+            document.getElementById('audio-uploader').style.display = 'block';
+        });
+
+        // Enhanced drag and drop functionality
+        const dropAreas = document.querySelectorAll('#drop-area');
+        dropAreas.forEach(dropArea => {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            function highlight(e) {
+                dropArea.classList.add('border-primary');
+            }
+
+            function unhighlight(e) {
+                dropArea.classList.remove('border-primary');
+            }
+
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+
+            function handleFiles(files) {
+                const fileInput = dropArea.querySelector('input[type="file"]');
+                if (fileInput && files.length > 0) {
+                    fileInput.files = files;
+                    // Trigger change event if needed
+                    const event = new Event('change', { bubbles: true });
+                    fileInput.dispatchEvent(event);
+                }
+            }
+        });
+
+        // Form validation
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+{% endblock %}

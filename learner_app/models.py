@@ -3,7 +3,6 @@ from authentication_app.models import CustomUser
 # Create your models here.
 
 class Track(models.Model):
-    track_id = models.CharField(max_length=50, primary_key=True)
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -35,7 +34,6 @@ class SubDot(models.Model):
         return f"{self.order}: {self.name}"
 
 class Content(models.Model):
-    content_id = models.CharField(max_length=20, primary_key=True)
     title = models.CharField(max_length=50)
     description = models.TextField()
     last_time_edited = models.DateTimeField(auto_now=True)
@@ -52,12 +50,12 @@ class Content(models.Model):
 
 
 class Learner(models.Model):
-    learner_id = models.CharField(max_length=10, primary_key=True)
     first_name = models.CharField(max_length=10)
     last_name = models.CharField(max_length=10)
     email = models.EmailField(unique=True)
     contact_number = models.CharField(max_length=15)
     registration_date = models.DateTimeField(auto_now_add=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
     subscription_type = models.CharField(max_length=50)
 
@@ -72,16 +70,15 @@ class Learner(models.Model):
 
 
 class Assessment(models.Model):
-    assessment_id = models.CharField(max_length=10, primary_key=True)
     name = models.CharField(max_length=100)
     sub_dot = models.ForeignKey(SubDot, on_delete=models.CASCADE, related_name='assessments')
+    learner_id = models.ForeignKey(Learner, on_delete=models.CASCADE, related_name='assessments')
 
     def __str__(self):
         return self.name
 
 
 class Feedback(models.Model):
-    feedback_id = models.CharField(max_length=10, primary_key=True)
     learner_id = models.ForeignKey(Learner, on_delete=models.CASCADE, related_name='feedbacks')
     comments = models.TextField()
     rating = models.FloatField()
@@ -92,7 +89,6 @@ class Feedback(models.Model):
 
 
 class Payment(models.Model):
-    payment_id = models.CharField(max_length=50, primary_key=True)
     learner_id = models.ForeignKey(Learner, on_delete=models.CASCADE, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateTimeField(auto_now_add=True)
@@ -103,7 +99,6 @@ class Payment(models.Model):
 
 
 class ChatHistory(models.Model):
-    chat_id = models.CharField(max_length=50, primary_key=True)
     learner_id = models.ForeignKey(Learner, on_delete=models.CASCADE, related_name='chats')
     message = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)

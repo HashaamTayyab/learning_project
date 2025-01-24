@@ -49,7 +49,7 @@ class Content(models.Model):
         return self.title
 
 
-class User(AbstractUser):
+class Learner(AbstractUser):
     contact_number = models.CharField(max_length=15)
     registration_date = models.DateTimeField(auto_now_add=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)

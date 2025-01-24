@@ -49,10 +49,7 @@ class Content(models.Model):
         return self.title
 
 
-class Learner(models.Model):
-    first_name = models.CharField(max_length=10)
-    last_name = models.CharField(max_length=10)
-    email = models.EmailField(unique=True)
+class User(AbstractUser):
     contact_number = models.CharField(max_length=15)
     registration_date = models.DateTimeField(auto_now_add=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
